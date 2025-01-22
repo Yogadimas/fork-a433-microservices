@@ -1,0 +1,22 @@
+version: "2.4" # Menggunakan Docker Compose versi 2 atau lebih
+
+services:
+  # Service untuk aplikasi item-app
+  item-app:
+    image: ghcr.io/yogadimas/item-app:v1 # Menggunakan image dari GitHub Packages
+    ports:
+      - "80:8080" # Port mapping agar dapat diakses dari port 80 di host
+    depends_on:
+      - item-db # Pastikan service item-app hanya berjalan setelah item-db
+    restart: always # Restart policy agar container selalu restart jika terhenti
+
+  # Service untuk database item-db
+  item-db:
+    image: mongo:3 # Gunakan image MongoDB versi 3 dari Docker Hub
+    volumes:
+      - app-db:/data/db # Gunakan volume bernama app-db dengan target /data/db
+    restart: always # Restart policy agar container selalu restart jika terhenti
+
+volumes:
+  # Volume untuk menyimpan data database
+  app-db:

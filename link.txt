@@ -1,0 +1,2 @@
+Github Packages: https://github.com/users/Yogadimas/packages/container/package/item-app
+Docker Hub: https://hub.docker.com/r/yogadimas/item-app
