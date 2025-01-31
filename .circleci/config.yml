@@ -1,46 +1,64 @@
-version: 2.1
+version: 2.1  # Versi konfigurasi CircleCI yang digunakan.
 
-executors:
-  node-executor:
-    docker:
-      - image: node:14.21-alpine
-    working_directory: /app
+executors:  # Definisi executor yang digunakan untuk menjalankan job.
+  node-executor:  # Executor untuk menjalankan job dengan Node.js.
+    docker:  # Konfigurasi Docker untuk executor ini.
+      - image: node:14.21-alpine  # Image yang digunakan, yaitu Node.js versi 14.21 berbasis Alpine.
+    working_directory: /app  # Direktori kerja untuk Node.js.
 
-  docker-executor:
-    docker:
-      - image: circleci/python:3.8
+  docker-executor:  # Executor untuk menjalankan job dengan Python.
+    docker:  # Konfigurasi Docker untuk executor ini.
+      - image: circleci/python:3.8  # Image yang digunakan, yaitu Python versi 3.8.
 
-jobs:
-  lint-dockerfile:
-    executor: docker-executor
-    steps:
-      - checkout
-      - run:
-          name: Install hadolint
-          command: |
-            curl -sSL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o /usr/local/bin/hadolint
-            chmod +x /usr/local/bin/hadolint
-      - run:
-          name: Lint Dockerfile
-          command: hadolint Dockerfile
+jobs:  # Definisi job yang akan dijalankan dalam pipeline.
+  lint-dockerfile:  # Job untuk melakukan linting pada Dockerfile.
+    executor: docker-executor  # Menggunakan executor docker-executor.
+    steps:  # Langkah-langkah yang akan dijalankan dalam job ini.
+      - checkout  # Mengambil kode dari repositori.
+      - run:  # Menjalankan perintah di dalam job.
+          name: Install hadolint  # Nama langkah untuk menginstal hadolint.
+          command: |  # Perintah yang akan dijalankan.
+            mkdir -p ~/bin 
+            curl -sSL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o ~/bin/hadolint 
+            chmod +x ~/bin/hadolint 
+            echo 'export PATH=$HOME/bin:$PATH' >> $BASH_ENV 
 
-  build-app-karsajobs-ui:
-    docker:
-      - image: node:14.21-alpine
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build & Push Docker Image
-          command: |
-            chmod +x build_push_image_karsajobs-ui.sh
-            ./build_push_image_karsajobs-ui.sh
+      - run:  # Menjalankan perintah di dalam job.
+          name: Lint Dockerfile  # Nama langkah untuk linting Dockerfile.
+          command: hadolint Dockerfile  # Menjalankan hadolint pada Dockerfile.
 
-workflows:
-  version: 2
-  karsajobs_ui_pipeline:
-    jobs:
-      - lint-dockerfile
-      - build-app-karsajobs-ui:
-          requires:
-            - lint-dockerfile
+  build-app-karsajobs-ui:  # Job untuk build dan push Image aplikasi UI.
+    docker:  # Menggunakan Docker untuk job ini.
+      - image: cimg/node:23.7.0  # Image yang digunakan, yaitu Node.js versi 23.7.0.
+    steps:  # Langkah-langkah yang akan dijalankan dalam job ini.
+      - checkout  # Mengambil kode dari repositori.
+      - setup_remote_docker  # Mengatur Docker remote untuk build Image.
+      - run:  # Menjalankan perintah di dalam job.
+          name: Debug File List & Path  # Nama langkah untuk debugging.
+          command: |  # Perintah yang akan dijalankan.
+            echo "Current Directory:" 
+            pwd 
+            echo "Listing files:" 
+            ls -lah 
+            echo "Checking if script exists and its permissions:"
+            ls -lah | grep build_push_image_karsajobs_ui.sh 
+
+      - run:  # Menjalankan perintah di dalam job.
+          name: Ensure script is executable  # Nama langkah untuk memastikan skrip dapat dieksekusi.
+          command: |  # Perintah yang akan dijalankan.
+            chmod +x ./build_push_image_karsajobs_ui.sh
+            ls -lah | grep build_push_image_karsajobs_ui.sh 
+
+      - run:  # Menjalankan perintah di dalam job.
+          name: Run Build & Push Script  # Nama langkah untuk menjalankan skrip build dan push.
+          command: |  # Perintah yang akan dijalankan.
+            ./build_push_image_karsajobs_ui.sh 
+
+workflows:  # Definisi workflow untuk mengatur urutan job.
+  version: 2  # Versi workflow yang digunakan.
+  karsajobs_ui_pipeline:  # Nama workflow untuk pipeline karsajobs UI.
+    jobs:  # Daftar job yang akan dijalankan dalam workflow ini.
+      - lint-dockerfile  # Job linting Dockerfile.
+      - build-app-karsajobs-ui:  # Job untuk build dan push Image aplikasi UI.
+          requires:  # Menentukan job yang harus selesai sebelum job ini dijalankan.
+            - lint-dockerfile  # Memerlukan job lint-dockerfile.
