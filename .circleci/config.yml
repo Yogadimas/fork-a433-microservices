@@ -1,56 +1,59 @@
-version: 2.1
+version: 2.1  # Versi konfigurasi CircleCI yang digunakan.
 
-executors:
-  golang-executor:
-    docker:
-      - image: golang:1.15-alpine
-    working_directory: /go/src/github.com/dicodingacademy/karsajobs
+executors:  # Definisi executor yang digunakan untuk menjalankan job.
+  golang-executor:  # Executor untuk menjalankan job dengan Go.
+    docker:  # Konfigurasi Docker untuk executor ini.
+      - image: golang:1.15  # Image yang digunakan, yaitu Go versi 1.15.
+    working_directory: /go/src/github.com/dicodingacademy/karsajobs  # Direktori kerja untuk Go.
 
-  docker-executor:
-    docker:
-      - image: circleci/python:3.8
+  docker-executor:  # Executor untuk menjalankan job dengan Python.
+    docker:  # Konfigurasi Docker untuk executor ini.
+      - image: circleci/python:3.8  # Image yang digunakan, yaitu Python versi 3.8.
 
-jobs:
-  lint-dockerfile:
-    executor: docker-executor
-    steps:
-      - checkout
-      - run:
-          name: Install hadolint
-          command: |
-            curl -sSL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o /usr/local/bin/hadolint
-            chmod +x /usr/local/bin/hadolint
-      - run:
-          name: Lint Dockerfile
-          command: hadolint Dockerfile
+jobs:  # Definisi job yang akan dijalankan dalam pipeline.
+  lint-dockerfile:  # Job untuk melakukan linting pada Dockerfile.
+    executor: docker-executor  # Menggunakan executor docker-executor.
+    steps:  # Langkah-langkah yang akan dijalankan dalam job ini.
+      - checkout  # Mengambil kode dari repositori.
+      - run:  # Menjalankan perintah di dalam job.
+          name: Install hadolint  # Nama langkah untuk menginstal hadolint.
+          command: |  # Perintah yang akan dijalankan.
+            mkdir -p ~/bin 
+            curl -sSL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o ~/bin/hadolint 
+            chmod +x ~/bin/hadolint 
+            echo 'export PATH=$HOME/bin:$PATH' >> $BASH_ENV 
 
-  test-app:
-    executor: golang-executor
-    steps:
-      - checkout
-      - run:
-          name: Run Go Tests
-          command: go test -v -short --count=1 $(go list ./...)
+      - run:  # Menjalankan perintah di dalam job.
+          name: Lint Dockerfile  # Nama langkah untuk linting Dockerfile.
+          command: hadolint Dockerfile  # Menjalankan hadolint pada Dockerfile.
 
-  build-app-karsajobs:
-    docker:
-      - image: circleci/golang:1.15
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build & Push Docker Image
-          command: |
-            chmod +x build_push_image_karsajobs.sh
-            ./build_push_image_karsajobs.sh
+  test-app:  # Job untuk menjalankan pengujian aplikasi Go.
+    executor: golang-executor  # Menggunakan executor golang-executor.
+    steps:  # Langkah-langkah yang akan dijalankan dalam job ini.
+      - checkout  # Mengambil kode dari repositori.
+      - run:  # Menjalankan perintah di dalam job.
+          name: Run Go Tests  # Nama langkah untuk menjalankan pengujian.
+          command: go test -v -short --count=1 $(go list ./...)  # Menjalankan pengujian Go.
 
-workflows:
-  version: 2
-  karsajobs_pipeline:
-    jobs:
-      - lint-dockerfile
-      - test-app
-      - build-app-karsajobs:
-          requires:
-            - lint-dockerfile
-            - test-app
+  build-app-karsajobs:  # Job untuk build dan push Image aplikasi.
+    docker:  # Menggunakan Docker untuk job ini.
+      - image: circleci/golang:1.15  # Image yang digunakan, yaitu Go versi 1.15.
+    steps:  # Langkah-langkah yang akan dijalankan dalam job ini.
+      - checkout  # Mengambil kode dari repositori.
+      - setup_remote_docker  # Mengatur Docker remote untuk build Image.
+      - run:  # Menjalankan perintah di dalam job.
+          name: Build & Push Docker Image  # Nama langkah untuk build dan push Image.
+          command: |  # Perintah yang akan dijalankan.
+            chmod +x build_push_image_karsajobs.sh  
+            ./build_push_image_karsajobs.sh 
+
+workflows:  # Definisi workflow untuk mengatur urutan job.
+  version: 2  # Versi workflow yang digunakan.
+  karsajobs_pipeline:  # Nama workflow untuk pipeline karsajobs.
+    jobs:  # Daftar job yang akan dijalankan dalam workflow ini.
+      - lint-dockerfile  # Job linting Dockerfile.
+      - test-app  # Job pengujian aplikasi.
+      - build-app-karsajobs:  # Job untuk build dan push gambar.
+          requires:  # Menentukan job yang harus selesai sebelum job ini dijalankan.
+            - lint-dockerfile  # Memerlukan job lint-dockerfile.
+            - test-app  # Memerlukan job test-app.
