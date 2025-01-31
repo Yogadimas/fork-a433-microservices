@@ -1,0 +1,46 @@
+version: 2.1
+
+executors:
+  node-executor:
+    docker:
+      - image: node:14.21-alpine
+    working_directory: /app
+
+  docker-executor:
+    docker:
+      - image: circleci/python:3.8
+
+jobs:
+  lint-dockerfile:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Install hadolint
+          command: |
+            curl -sSL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o /usr/local/bin/hadolint
+            chmod +x /usr/local/bin/hadolint
+      - run:
+          name: Lint Dockerfile
+          command: hadolint Dockerfile
+
+  build-app-karsajobs-ui:
+    docker:
+      - image: node:14.21-alpine
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build & Push Docker Image
+          command: |
+            chmod +x build_push_image_karsajobs-ui.sh
+            ./build_push_image_karsajobs-ui.sh
+
+workflows:
+  version: 2
+  karsajobs_ui_pipeline:
+    jobs:
+      - lint-dockerfile
+      - build-app-karsajobs-ui:
+          requires:
+            - lint-dockerfile
