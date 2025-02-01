@@ -11,8 +11,8 @@ workflows:  # Definisi workflow untuk mengatur urutan job.
       - path-filtering/filter:  # Job untuk memfilter jalur berdasarkan perubahan.
           name: check-branch  # Nama job untuk memeriksa cabang.
           mapping: |  # Pemetaan jalur untuk job yang akan dijalankan.
-            karsajobs build-karsajobs-config
-            karsajobs-ui build-karsajobs-ui-config
+            ^karsajobs$ build-karsajobs-config
+            ^karsajobs-ui$ build-karsajobs-ui-config
           base-revision: main  # Menentukan revisi dasar untuk perbandingan.
           config-path: .circleci/config.yml  # Jalur ke file konfigurasi CircleCI.
 
