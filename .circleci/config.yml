@@ -1,44 +1,41 @@
-version: 2.1  # Versi konfigurasi CircleCI yang digunakan.
+version: 2.1
 
-setup: true  # Mengaktifkan dynamic config untuk fleksibilitas dalam pengaturan pipeline.
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-karsajobs-config:
+          filters:
+            branches:
+              only: karsajobs
+      - build-karsajobs-ui-config:
+          filters:
+            branches:
+              only: karsajobs-ui
 
-orbs:  # Definisi orbs yang digunakan dalam konfigurasi.
-  path-filtering: circleci/path-filtering@0.1.3  # Menggunakan orb untuk memfilter jalur berdasarkan perubahan.
-
-workflows:  # Definisi workflow untuk mengatur urutan job.
-  setup:  # Nama workflow untuk setup.
-    jobs:  # Daftar job yang akan dijalankan dalam workflow ini.
-      - path-filtering/filter:  # Job untuk memfilter jalur berdasarkan perubahan.
-          name: check-branch  # Nama job untuk memeriksa cabang.
-          mapping: |  # Pemetaan jalur untuk job yang akan dijalankan.
-            ^karsajobs$ build-karsajobs-config
-            ^karsajobs-ui$ build-karsajobs-ui-config
-          base-revision: main  # Menentukan revisi dasar untuk perbandingan.
-          config-path: .circleci/config.yml  # Jalur ke file konfigurasi CircleCI.
-
-jobs:  # Definisi job yang akan dijalankan dalam pipeline.
-  build-karsajobs-config:  # Job untuk membangun konfigurasi karsajobs.
-    docker:  # Menggunakan Docker untuk job ini.
-      - image: cimg/base:stable  # Gambar Docker yang digunakan, yaitu base image yang stabil.
-    steps:  # Langkah-langkah yang akan dijalankan dalam job ini.
-      - checkout  # Mengambil kode dari repositori.
-      - run:  # Menjalankan perintah di dalam job.
-          name: "Trigger Karsajobs Pipeline"  # Nama langkah untuk memicu pipeline karsajobs.
-          command: |  # Perintah yang akan dijalankan.
+jobs:
+  build-karsajobs-config:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: "Trigger Karsajobs Pipeline"
+          command: |
             curl -X POST "https://circleci.com/api/v2/project/github/Yogadimas/fork-a433-microservices/pipeline" \
             -H "Circle-Token: ${CIRCLECI_TOKEN}" \
             -H "Content-Type: application/json" \
             -d '{ "branch": "karsajobs" }'
 
-  build-karsajobs-ui-config:  # Job untuk membangun konfigurasi karsajobs-ui.
-    docker:  # Menggunakan Docker untuk job ini.
-      - image: cimg/base:stable  # Gambar Docker yang digunakan, yaitu base image yang stabil.
-    steps:  # Langkah-langkah yang akan dijalankan dalam job ini.
-      - checkout  # Mengambil kode dari repositori.
-      - run:  # Menjalankan perintah di dalam job.
-          name: "Trigger Karsajobs UI Pipeline"  # Nama langkah untuk memicu pipeline karsajobs-ui.
-          command: |  # Perintah yang akan dijalankan.
-            curl -X POST "https://circleci.com/api/v2/project/github/Yogadimas/fork-a433-microservices/pipeline" \ 
-            -H "Circle-Token: ${CIRCLECI_TOKEN}" \  
-            -H "Content-Type: application/json" \ 
-            -d '{ "branch": "karsajobs-ui" }'  
+  build-karsajobs-ui-config:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: "Trigger Karsajobs UI Pipeline"
+          command: |
+            curl -X POST "https://circleci.com/api/v2/project/github/Yogadimas/fork-a433-microservices/pipeline" \
+            -H "Circle-Token: ${CIRCLECI_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{ "branch": "karsajobs-ui" }'
