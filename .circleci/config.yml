@@ -12,6 +12,10 @@ workflows:
           filters:
             branches:
               only: karsajobs-ui
+      - default-job:
+          filters:
+            branches:
+              only: main
 
 jobs:
   build-karsajobs-config:
@@ -39,3 +43,10 @@ jobs:
             -H "Circle-Token: ${CIRCLECI_TOKEN}" \
             -H "Content-Type: application/json" \
             -d '{ "branch": "karsajobs-ui" }'
+
+  default-job:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run: echo "Running default job for main branch"
