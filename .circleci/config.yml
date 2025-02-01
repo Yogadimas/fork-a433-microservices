@@ -1,52 +1,55 @@
-version: 2.1
+version: 2.1  # Menggunakan CircleCI versi 2.1
 
-workflows:
-  version: 2
-  build:
-    jobs:
-      - build-karsajobs-config:
-          filters:
-            branches:
-              only: karsajobs
-      - build-karsajobs-ui-config:
-          filters:
-            branches:
-              only: karsajobs-ui
-      - default-job:
-          filters:
-            branches:
-              only: main
+workflows:  
+  version: 2  # Menentukan versi workflow
 
-jobs:
-  build-karsajobs-config:
+  build:  # Nama workflow utama
+    jobs:  # Daftar job yang akan dijalankan berdasarkan branch
+      - build-karsajobs-config:  # Job khusus untuk branch `karsajobs`
+          filters:
+            branches:
+              only: karsajobs  # Job ini hanya berjalan jika commit dilakukan di branch `karsajobs`
+
+      - build-karsajobs-ui-config:  # Job khusus untuk branch `karsajobs-ui`
+          filters:
+            branches:
+              only: karsajobs-ui  # Job ini hanya berjalan jika commit dilakukan di branch `karsajobs-ui`
+
+      - default-job:  # Job default untuk branch `main`
+          filters:
+            branches:
+              only: main  # Job ini hanya berjalan jika commit dilakukan di branch `main`
+
+jobs:  
+  build-karsajobs-config:  # Job yang dijalankan jika branch `karsajobs` terkena commit
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:stable  # Menggunakan image Docker CircleCI berbasis Linux
     steps:
-      - checkout
+      - checkout  # Mengambil kode dari repository
       - run:
-          name: "Trigger Karsajobs Pipeline"
+          name: "Trigger Karsajobs Pipeline"  # Nama langkah dalam job ini
           command: |
             curl -X POST "https://circleci.com/api/v2/project/github/Yogadimas/fork-a433-microservices/pipeline" \
-            -H "Circle-Token: ${CIRCLECI_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{ "branch": "karsajobs" }'
+            -H "Circle-Token: ${CIRCLECI_TOKEN}" \ 
+            -H "Content-Type: application/json" \  
+            -d '{ "branch": "karsajobs" }' 
 
-  build-karsajobs-ui-config:
+  build-karsajobs-ui-config:  # Job yang dijalankan jika branch `karsajobs-ui` terkena commit
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:stable  # Menggunakan image Docker CircleCI berbasis Linux
     steps:
-      - checkout
+      - checkout  # Mengambil kode dari repository
       - run:
-          name: "Trigger Karsajobs UI Pipeline"
+          name: "Trigger Karsajobs UI Pipeline"  # Nama langkah dalam job ini
           command: |
             curl -X POST "https://circleci.com/api/v2/project/github/Yogadimas/fork-a433-microservices/pipeline" \
-            -H "Circle-Token: ${CIRCLECI_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{ "branch": "karsajobs-ui" }'
+            -H "Circle-Token: ${CIRCLECI_TOKEN}" \ 
+            -H "Content-Type: application/json" \  
+            -d '{ "branch": "karsajobs-ui" }' 
 
-  default-job:
+  default-job:  # Job yang dijalankan jika branch `main` terkena commit
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:stable  # Menggunakan image Docker CircleCI berbasis Linux
     steps:
-      - checkout
-      - run: echo "Running default job for main branch"
+      - checkout  # Mengambil kode dari repository
+      - run: echo "Running default job for main branch"  # Menampilkan pesan di terminal bahwa job sedang berjalan
