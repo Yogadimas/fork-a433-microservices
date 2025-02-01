@@ -1,0 +1,44 @@
+version: 2.1
+
+setup: true  # Mengaktifkan dynamic config
+
+orbs:
+  path-filtering: circleci/path-filtering@0.1.3
+
+workflows:
+  setup:
+    jobs:
+      - path-filtering/filter:
+          name: check-branch
+          mapping: |
+            karsajobs build-karsajobs-config
+            karsajobs-ui build-karsajobs-ui-config
+          base-revision: main
+          config-path: .circleci/config.yml
+
+jobs:
+  build-karsajobs-config:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: "Trigger Karsajobs Pipeline"
+          command: |
+            curl -X POST "https://circleci.com/api/v2/project/github/Yogadimas/fork-a433-microservices/pipeline" \
+            -H "Circle-Token: ${CIRCLECI_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{ "branch": "karsajobs" }'
+
+  build-karsajobs-ui-config:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: "Trigger Karsajobs UI Pipeline"
+          command: |
+            curl -X POST "https://circleci.com/api/v2/project/github/Yogadimas/fork-a433-microservices/pipeline" \
+            -H "Circle-Token: ${CIRCLECI_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{ "branch": "karsajobs-ui" }'
