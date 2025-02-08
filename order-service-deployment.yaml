@@ -1,0 +1,36 @@
+apiVersion: apps/v1  # Menentukan versi API yang digunakan untuk objek Deployment.
+kind: Deployment  # Menyatakan jenis objek yang akan dibuat, yaitu Deployment.
+metadata:  # Bagian metadata yang berisi informasi tentang Deployment.
+  name: order-service  # Nama Deployment ini adalah 'order-service'.
+spec:  # Spesifikasi dari Deployment.
+  replicas: 2  # Menentukan jumlah replika pod yang diinginkan, di sini sebanyak 2.
+  selector:  # Selector untuk memilih pod yang dikelola oleh Deployment.
+    matchLabels:  # Label yang harus cocok untuk pemilihan pod.
+      app: order-service  # Pod harus memiliki label app: order-service.
+  template:  # Template untuk pod yang akan dibuat oleh Deployment.
+    metadata:  # Metadata untuk pod yang akan dibuat.
+      labels:  # Label yang diterapkan pada pod.
+        app: order-service  # Label untuk pod ini.
+    spec:  # Spesifikasi dari pod.
+      containers:  # Daftar kontainer yang akan dijalankan dalam pod.
+        - name: order-service  # Nama kontainer.
+          image: ghcr.io/yogadimas/order-service:latest  # Gambar kontainer yang digunakan, diambil dari GitHub Container Registry.
+          ports:  # Daftar port yang akan diekspos oleh kontainer.
+            - containerPort: 3000  # Port yang akan diekspos oleh kontainer, yaitu 3000.
+          env:  # Daftar variabel lingkungan yang akan digunakan oleh kontainer.
+            - name: AMQP_URL  # Nama variabel lingkungan.
+              value: "amqp://guest:guest@my-rabbitmq:5672/"  # Nilai variabel lingkungan yang berisi URL untuk menghubungkan ke RabbitMQ.
+
+---
+apiVersion: v1  # Menentukan versi API yang digunakan untuk objek Service.
+kind: Service  # Menyatakan jenis objek yang akan dibuat, yaitu Service.
+metadata:  # Bagian metadata yang berisi informasi tentang Service.
+  name: order-service  # Nama Service ini adalah 'order-service'.
+spec:  # Spesifikasi dari Service.
+  selector:  # Selector untuk memilih pod yang akan dilayani oleh Service.
+    app: order-service  # Menghubungkan Service ke pod dengan label 'app: order-service'.
+  ports:  # Daftar port yang akan digunakan oleh Service.
+    - protocol: TCP  # Protokol yang digunakan oleh Service, di sini adalah TCP.
+      port: 80  # Port yang akan diekspos oleh Service, yaitu 80.
+      targetPort: 3000  # Port yang akan diteruskan ke kontainer, yaitu 3000.
+
