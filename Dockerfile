@@ -1,23 +1,31 @@
 # Menggunakan Node.js versi 16 sebagai base image
-FROM node:16
+# Menetapkan image dasar yang digunakan untuk membangun container, dalam hal ini adalah Node.js versi 16.
+FROM node:16  
 
 # Set working directory
-WORKDIR /app
+# Menetapkan direktori kerja di dalam container ke '/app'.
+WORKDIR /app  
 
 # Copy package.json dan package-lock.json
-COPY package*.json ./
+# Menyalin file package.json dan package-lock.json dari direktori lokal ke direktori kerja di dalam container.
+COPY package*.json ./  
 
 # Install dependencies
-RUN npm install
+# Menjalankan perintah npm install untuk menginstal semua dependensi yang terdaftar di package.json.
+RUN npm install  
 
 # Copy semua source code ke dalam container
-COPY . .
+# Menyalin semua file dan folder dari direktori lokal ke dalam direktori kerja di dalam container.
+COPY . .  
 
 # Set environment variables (optional)
-ENV PORT=3000
+# Menetapkan variabel lingkungan PORT dengan nilai 3000, yang dapat digunakan oleh aplikasi.
+ENV PORT=3000  
 
 # Expose port
-EXPOSE 3000
+# Menginformasikan bahwa container akan mendengarkan pada port 3000 saat dijalankan.
+EXPOSE 3000 
 
 # Jalankan aplikasi
+# Menentukan perintah yang akan dijalankan saat container dimulai, dalam hal ini menjalankan aplikasi Node.js dengan perintah npm start.
 CMD ["npm", "start"]
